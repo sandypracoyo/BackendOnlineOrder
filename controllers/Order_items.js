@@ -5,44 +5,24 @@ const { order,order_item,customer,driver,product } = require('../models/index');
 
 
 exports.getOrderDetailById = async (req,res)=>{
-    const orderId = req.params.id
+    const userId = req.params.id
     try {
-        const orderData = await order.findOne({
-            where: {id:orderId},
-            attributes: ['id','status','customer.full_name'],
+        const orderData = await order.findAll({
+          where:{user_id:userId},
             include: [{
-                model: customer,
-                attributes: []
-               },
-               {
-                model: driver,
-                attributes: ['full_name']
-               }
-            ],
-            raw: true
-        })
-
-        const orderDetail = await order_item.findAll({
-            where:{order_id:orderData.id},
-            include:[
-                {
-                    model:product,
-                    attributes: []
-                }
-            ],
-            raw: true,
-            attributes: ['product.name','quantity']
+                model: order_item,
+                attributes: ['quantity'],
+              include: [{
+                model: product,
+                attributes: ['name']
+            }]
+          }]
         })
         
-        const fullData = {
-            ...orderData,
-            order_detail: orderDetail
-        }
-
         res.json({
             message: 'success retrieve data',
 			status: true,
-			data: fullData
+			data: orderData
         })
 
     } catch (error) {
